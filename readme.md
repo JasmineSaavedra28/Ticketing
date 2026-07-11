@@ -122,9 +122,9 @@ Se ejecutarán en **hilos secundarios / tareas asíncronas**, utilizando callbac
 
 ### 🧪 Metodología TDD (Test-Driven Development)
 El ciclo de vida del código seguirá la regla de las 3R:
-1. 🔴 **Red:** Escribir una prueba unitaria que falle
-2.  **Green:** Escribir el código mínimo para que la prueba pase
-3. 🔵 **Refactor:** Limpiar y optimizar el código manteniendo las pruebas en verde
+1. **Red:** Escribir una prueba unitaria que falle
+2. **Green:** Escribir el código mínimo para que la prueba pase
+3. **Refactor:** Limpiar y optimizar el código manteniendo las pruebas en verde
 
 **Ejemplo de tests a implementar:**
 - `test_crear_ticket_asigna_tecnico_correcto()`
