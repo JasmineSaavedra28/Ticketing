@@ -61,17 +61,27 @@ class Servicio:
         ticket=self.tickets.buscar(ticket_id)
         if not ticket: raise ValueError("No se encontró el ticket.")
         if usuario["id"] not in (ticket["cliente_id"],ticket["tecnico_id"]) and usuario["rol"]!="Admin": raise PermissionError("No tenés acceso a este ticket.")
+        if ticket["estado"]==EstadoTicket.CERRADO.value: raise ValueError("No se pueden enviar mensajes en un ticket cerrado. Reabrilo primero.")
         if not contenido.strip(): raise ValueError("El mensaje no puede estar vacío.")
         destinatario=ticket["tecnico_id"] if usuario["id"]==ticket["cliente_id"] else ticket["cliente_id"]
         self.tickets.enviar_mensaje(ticket_id,usuario["id"],contenido,destinatario)
+
+    def reabrir_ticket(self,ticket_id,usuario,contenido):
+        ticket=self.tickets.buscar(ticket_id)
+        if not ticket: raise ValueError("No se encontró el ticket.")
+        if usuario["rol"]!="Cliente" or usuario["id"]!=ticket["cliente_id"]: raise PermissionError("Solo el cliente titular puede reabrir el ticket.")
+        if ticket["estado"]!=EstadoTicket.CERRADO.value: raise ValueError("Solo se pueden reabrir tickets cerrados.")
+        if not contenido.strip(): raise ValueError("Ingresá una consulta para justificar la reapertura.")
+        self.tickets.reabrir(ticket_id,usuario["id"],contenido,ticket["tecnico_id"])
 
     def cambiar_estado(self,ticket_id,estado,usuario):
         ticket=self.tickets.buscar(ticket_id)
         if not ticket: raise ValueError("No se encontró el ticket.")
         if usuario["rol"]!="Admin" and usuario["id"] not in (ticket["cliente_id"],ticket["tecnico_id"]): raise PermissionError("No tenés acceso a este ticket.")
         if usuario["rol"]=="Cliente" and estado not in (EstadoTicket.CERRADO,EstadoTicket.ABIERTO): raise PermissionError("El cliente solo puede cerrar o reabrir el ticket.")
-        if estado==EstadoTicket.ABIERTO and ticket["estado"]!=EstadoTicket.CERRADO: raise ValueError("Solo se pueden reabrir tickets cerrados.")
-        if estado==EstadoTicket.CERRADO and ticket["estado"]==EstadoTicket.CERRADO: raise ValueError("El ticket ya está cerrado.")
+        if estado==EstadoTicket.ABIERTO: raise ValueError("La reapertura requiere una consulta y solo la puede solicitar el cliente titular.")
+        if ticket["estado"]==EstadoTicket.CERRADO.value and estado!=EstadoTicket.CERRADO: raise ValueError("La reapertura debe solicitarla el cliente titular con una nueva consulta.")
+        if estado==EstadoTicket.CERRADO and ticket["estado"]==EstadoTicket.CERRADO.value: raise ValueError("El ticket ya está cerrado.")
         self.tickets.cambiar_estado(ticket_id,estado,usuario["id"])
 
     def manejar_error(self,error):

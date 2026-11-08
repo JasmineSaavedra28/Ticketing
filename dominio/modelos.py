@@ -6,7 +6,6 @@ from enum import Enum
 class EstadoTicket(str, Enum):
     ABIERTO = "Abierto"
     EN_PROCESO = "En proceso"
-    RESUELTO = "Resuelto"
     CERRADO = "Cerrado"
 
 

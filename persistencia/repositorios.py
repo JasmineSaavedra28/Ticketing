@@ -74,6 +74,14 @@ class TicketRepository:
             t=c.execute("SELECT estado FROM tickets WHERE id=?",(ticket_id,)).fetchone()
             c.execute("INSERT INTO hitos(ticket_id,tipo_evento,detalle,fecha_hora,estado_resultante,realizado_por) VALUES(?,?,?,?,?,?)",(ticket_id,"Mensaje","Mensaje enviado",ahora,t["estado"],remitente_id))
             c.execute("INSERT INTO notificaciones(usuario_id,ticket_id,mensaje,fecha_hora) VALUES(?,?,?,?)",(destinatario_id,ticket_id,"Nuevo mensaje en el ticket #"+str(ticket_id),ahora))
+
+    def reabrir(self, ticket_id, cliente_id, contenido, tecnico_id):
+        ahora=datetime.now().isoformat(timespec="seconds")
+        with self.db.conectar() as c:
+            c.execute("UPDATE tickets SET estado=? WHERE id=?", (EstadoTicket.EN_PROCESO.value,ticket_id))
+            c.execute("INSERT INTO mensajes(ticket_id,remitente_id,contenido,fecha_hora) VALUES(?,?,?,?)",(ticket_id,cliente_id,contenido.strip(),ahora))
+            c.execute("INSERT INTO hitos(ticket_id,tipo_evento,detalle,fecha_hora,estado_resultante,realizado_por) VALUES(?,?,?,?,?,?)",(ticket_id,"Reapertura","Ticket reabierto por el cliente",ahora,EstadoTicket.EN_PROCESO.value,cliente_id))
+            c.execute("INSERT INTO notificaciones(usuario_id,ticket_id,mensaje,fecha_hora) VALUES(?,?,?,?)",(tecnico_id,ticket_id,"El ticket #"+str(ticket_id)+" fue reabierto",ahora))
     def cambiar_estado(self, ticket_id, nuevo_estado, actor_id):
         ahora=datetime.now().isoformat(timespec="seconds")
         with self.db.conectar() as c:

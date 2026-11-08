@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS productos (
 CREATE TABLE IF NOT EXISTS tickets (
  id INTEGER PRIMARY KEY, cliente_id INTEGER NOT NULL REFERENCES usuarios(id),
  tecnico_id INTEGER NOT NULL REFERENCES usuarios(id), producto_id INTEGER NOT NULL REFERENCES productos(id),
- descripcion TEXT NOT NULL, estado TEXT NOT NULL CHECK(estado IN ('Abierto','En proceso','Resuelto','Cerrado')),
+ descripcion TEXT NOT NULL, estado TEXT NOT NULL CHECK(estado IN ('Abierto','En proceso','Cerrado')),
  fecha_creacion TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS mensajes (

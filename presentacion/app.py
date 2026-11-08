@@ -1,6 +1,6 @@
 import sqlite3
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, simpledialog
 from concurrent.futures import ThreadPoolExecutor
 
 from control.servicios import Servicio
@@ -81,7 +81,7 @@ class HitosApp:
         bottom=ttk.Frame(self.tab_tickets); bottom.pack(fill="x")
         ttk.Button(bottom,text="Ver conversación e hitos",command=self.ver_ticket).pack(side="left")
         if self.usuario["rol"] in ("Tecnico","Admin"): ttk.Button(bottom,text="Cambiar estado",command=self.cambiar_estado).pack(side="left",padx=6)
-        if self.usuario["rol"] in ("Cliente","Admin"): ttk.Button(bottom,text="Cerrar / reabrir",command=self.cerrar_reabrir).pack(side="left")
+        if self.usuario["rol"]=="Cliente": ttk.Button(bottom,text="Cerrar / reabrir",command=self.cerrar_reabrir).pack(side="left")
         self.cargar_tickets()
 
     def cargar_tickets(self):
@@ -151,7 +151,15 @@ class HitosApp:
         tid=self.ticket_seleccionado()
         if tid is None:return
         t=self.servicio.tickets.buscar(tid)
-        estado=EstadoTicket.ABIERTO if t["estado"]==EstadoTicket.CERRADO.value else EstadoTicket.CERRADO
+        if t["estado"]==EstadoTicket.CERRADO.value:
+            consulta=simpledialog.askstring("Reabrir ticket", "Ingresá la nueva consulta para justificar la reapertura:", parent=self.root)
+            if consulta is None:return
+            try:
+                self.servicio.reabrir_ticket(tid,self.usuario,consulta)
+                messagebox.showinfo("Ticket reabierto","El ticket pasó a En proceso. Se registró el mensaje y se notificó al técnico."); self.cargar_tickets()
+            except Exception as e:messagebox.showerror("No se pudo reabrir",self.servicio.manejar_error(e))
+            return
+        estado=EstadoTicket.CERRADO
         try:
             self.servicio.cambiar_estado(tid,estado,self.usuario)
             messagebox.showinfo("Ticket actualizado","Se registró el cambio y se notificó a las partes."); self.cargar_tickets()

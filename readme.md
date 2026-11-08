@@ -10,7 +10,7 @@ Aplicación de escritorio en Python para registrar productos, crear y administra
 Desde la carpeta del proyecto:
 
 ```bash
-python main.py
+py main.py
 ```
 
 La base `hitos.db` se crea automáticamente en esa carpeta en el primer inicio. También se inicializan los tipos de producto definidos en el modelo.
@@ -33,7 +33,9 @@ El técnico de demostración se crea con la primera especialidad disponible. El 
 - Creación de tickets por clientes, con selección automática de un técnico de la especialidad correspondiente.
 - Listados de tickets según el rol y acceso a la conversación y la línea de hitos.
 - Envío de mensajes, registro de hitos y notificación a la otra parte.
-- Cambios de estado, cierre y reapertura de tickets cerrados con hitos y notificaciones.
+- Estados del ticket: Abierto, En proceso y Cerrado.
+- Reapertura por el cliente titular: cambia el ticket cerrado a En proceso, registra la consulta como mensaje y hito, y notifica al técnico.
+- Los mensajes solo se envían cuando el ticket está Abierto o En proceso.
 - Bandeja de notificaciones y opción para marcarlas como leídas.
 
 ## Organización
@@ -48,4 +50,5 @@ El técnico de demostración se crea con la primera especialidad disponible. El 
 
 La consigna actual solicita Python y persistencia SQLite, por lo que SQLite reemplaza la persistencia en memoria mencionada en la documentación anterior. Los casos de uso CU01–CU04 guían los flujos implementados. Las tablas tienen claves foráneas y restricciones de unicidad para correo y número de serie.
 
-Los diagramas describen además procesamiento asíncrono para evitar bloqueos de la interfaz. La interfaz actual ejecuta las operaciones SQLite locales directamente, ya que son operaciones breves; para despliegues con una base remota o carga alta conviene trasladarlas a tareas en segundo plano. El inicio de sesión se incluye para cubrir el requisito de seguridad de la documentación.
+El requisito original también mencionaba procesamiento asíncrono y TDD. La consigna actual compartida pide explícitamente Python y SQLite; no especifica procesamiento asíncrono. La interfaz ejecuta las operaciones SQLite localmente. El requisito TDD y las pruebas automatizadas todavía deben completarse.
+
