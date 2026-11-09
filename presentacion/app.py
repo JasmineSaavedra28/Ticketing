@@ -33,6 +33,7 @@ class HitosApp:
         style.configure("Title.TLabel",font=("Segoe UI",22,"bold"),foreground="#12304a",background="#f2f5f9")
         style.configure("Subtitle.TLabel",font=("Segoe UI",10),foreground="#64748b",background="#f2f5f9")
         style.configure("Section.TLabel",font=("Segoe UI",15,"bold"),foreground="#12304a",background="#f2f5f9")
+        style.configure("Count.TLabel",font=("Segoe UI",9,"bold"),foreground="#1769aa",background="#e0efff",padding=(10,5))
         style.configure("TButton",padding=(12,8),background="#e2e8f0",foreground="#243447",borderwidth=0)
         style.map("TButton",background=[("active","#cbd5e1"),("disabled","#e8edf3")])
         style.configure("Primary.TButton",padding=(14,9),background="#1769aa",foreground="white",font=("Segoe UI",10,"bold"))
@@ -93,8 +94,18 @@ class HitosApp:
 
     def _vista_tickets(self):
         top=ttk.Frame(self.tab_tickets); top.pack(fill="x")
-        if self.usuario["rol"] in ("Cliente","Admin"): ttk.Button(top,text="Crear ticket",command=self.crear_ticket).pack(side="left")
-        ttk.Button(top,text="Actualizar",command=self.cargar_tickets).pack(side="left",padx=6)
+        if self.usuario["rol"] in ("Cliente","Admin"): ttk.Button(top,text="+ Crear ticket",style="Primary.TButton",command=self.crear_ticket).pack(side="left")
+        ttk.Label(top,text="Buscar").pack(side="left",padx=(16,6))
+        self.ticket_busqueda=tk.StringVar()
+        busqueda=ttk.Entry(top,textvariable=self.ticket_busqueda,width=28); busqueda.pack(side="left")
+        busqueda.insert(0,"")
+        busqueda.bind("<KeyRelease>",lambda _e:self._filtrar_tickets())
+        ttk.Label(top,text="Estado").pack(side="left",padx=(12,6))
+        self.ticket_estado_filtro=ttk.Combobox(top,state="readonly",values=["Todos"]+[s.value for s in EstadoTicket],width=16)
+        self.ticket_estado_filtro.pack(side="left"); self.ticket_estado_filtro.current(0)
+        self.ticket_estado_filtro.bind("<<ComboboxSelected>>",lambda _e:self._filtrar_tickets())
+        ttk.Button(top,text="Actualizar",command=self.cargar_tickets).pack(side="right")
+        self.ticket_count=ttk.Label(self.tab_tickets,text="",style="Count.TLabel"); self.ticket_count.pack(anchor="e",pady=(10,0))
         self.ticket_tree=self._tree(self.tab_tickets,("id","titulo","estado","prioridad","cliente","tecnico","producto","fecha"),[("id","#",45),("titulo","Título",160),("estado","Estado",100),("prioridad","Prioridad",85),("cliente","Cliente",125),("tecnico","Técnico",125),("producto","Producto",150),("fecha","Creado",140)])
         bottom=ttk.Frame(self.tab_tickets); bottom.pack(fill="x")
         ttk.Button(bottom,text="Ver conversación e historial de actividad",command=self.ver_ticket).pack(side="left")
@@ -107,9 +118,19 @@ class HitosApp:
 
     def cargar_tickets(self):
         if not hasattr(self,"ticket_tree") or not self.ticket_tree.winfo_exists(): return
+        self._tickets_cache=self.servicio.ticket_controller.listar(self.usuario["id"],self.usuario["rol"])
+        self._filtrar_tickets()
+
+    def _filtrar_tickets(self):
+        if not hasattr(self,"ticket_tree") or not self.ticket_tree.winfo_exists():return
         self.ticket_tree.delete(*self.ticket_tree.get_children())
-        for t in self.servicio.ticket_controller.listar(self.usuario["id"],self.usuario["rol"]):
+        consulta=self.ticket_busqueda.get().strip().casefold() if hasattr(self,"ticket_busqueda") else ""
+        estado=self.ticket_estado_filtro.get() if hasattr(self,"ticket_estado_filtro") else "Todos"
+        tickets=[t for t in getattr(self,"_tickets_cache",[]) if (estado=="Todos" or t["estado"]==estado) and (not consulta or consulta in " ".join(str(v) for v in t.values()).casefold())]
+        for t in tickets:
             self.ticket_tree.insert("","end",iid=str(t["id"]),values=(t["id"],t["titulo"],t["estado"],t["prioridad"],t["cliente"],t["tecnico"],t["producto"],t["fecha_creacion"]))
+        if hasattr(self,"ticket_count") and self.ticket_count.winfo_exists():
+            self.ticket_count.configure(text=f"{len(tickets)} de {len(getattr(self,'_tickets_cache',[]))} tickets")
 
     def ticket_seleccionado(self):
         sel=self.ticket_tree.selection()
@@ -218,6 +239,10 @@ class HitosApp:
 
     def _vista_productos(self):
         bar=ttk.Frame(self.tab_productos); bar.pack(fill="x")
+        ttk.Label(bar,text="Buscar").pack(side="left")
+        self.producto_busqueda=tk.StringVar()
+        busqueda=ttk.Entry(bar,textvariable=self.producto_busqueda,width=26); busqueda.pack(side="left",padx=(6,14))
+        busqueda.bind("<KeyRelease>",lambda _e:self.cargar_productos())
         ttk.Label(bar,text="Filtrar por tipo:").pack(side="left")
         tipos=self.servicio.producto_controller.tipos()
         self.tipo_filtro=ttk.Combobox(bar,state="readonly",values=["Todos"]+[t["nombre"] for t in tipos],width=28); self.tipo_filtro.pack(side="left",padx=6); self.tipo_filtro.current(0)
@@ -225,7 +250,8 @@ class HitosApp:
         if self.usuario["rol"]=="Admin":
             ttk.Button(bar,text="Agregar producto",command=self.crear_producto).pack(side="left",padx=6)
             ttk.Button(bar,text="Agregar tipo",command=self.crear_tipo_producto).pack(side="left",padx=6)
-        self.producto_tree=self._tree(self.tab_productos,("nombre","tipo","marca","modelo","serie"),[("nombre","Producto",180),("tipo","Tipo",180),("marca","Marca",140),("modelo","Modelo",140),("serie","N.Âº de serie",180)])
+        self.producto_count=ttk.Label(self.tab_productos,text="",style="Count.TLabel"); self.producto_count.pack(anchor="e",pady=(10,0))
+        self.producto_tree=self._tree(self.tab_productos,("nombre","tipo","marca","modelo","serie"),[("nombre","Producto",180),("tipo","Tipo",180),("marca","Marca",140),("modelo","Modelo",140),("serie","N.º de serie",180)])
         self.cargar_productos()
 
     def cargar_productos(self):
@@ -233,7 +259,11 @@ class HitosApp:
         self.producto_tree.delete(*self.producto_tree.get_children())
         tipos=self.servicio.producto_controller.tipos(); elegido=self.tipo_filtro.get()
         tipo_id=next((t["id"] for t in tipos if t["nombre"]==elegido),None)
-        for p in self.servicio.producto_controller.listar(tipo_id):self.producto_tree.insert("","end",values=(p["nombre"],p["tipo"],p["marca"],p["modelo"],p["numero_serie"]))
+        productos=self.servicio.producto_controller.listar(tipo_id)
+        consulta=self.producto_busqueda.get().strip().casefold() if hasattr(self,"producto_busqueda") else ""
+        productos=[p for p in productos if not consulta or consulta in " ".join(str(v) for v in p.values()).casefold()]
+        for p in productos:self.producto_tree.insert("","end",values=(p["nombre"],p["tipo"],p["marca"],p["modelo"],p["numero_serie"]))
+        if hasattr(self,"producto_count") and self.producto_count.winfo_exists():self.producto_count.configure(text=f"{len(productos)} productos")
 
     def crear_producto(self):
         win=tk.Toplevel(self.root); win.title("Agregar producto"); win.transient(self.root); win.grab_set()

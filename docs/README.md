@@ -29,7 +29,7 @@ La aplicación mantiene la separación por capas del modelo: `dominio/` contiene
 - `Ticket` conserva título, descripción, fechas, prioridad, estado y asociaciones con cliente, técnico, producto, mensajes, hitos y notificaciones.
 - `Producto` incorpora `numero_serie`, que se usa como dato único para identificar productos registrados.
 - El ciclo de vida admite Abierto, En proceso, Resuelto y Cerrado. La reapertura de un ticket cerrado lo devuelve a En proceso.
-- La interfaz implementa autenticación y vistas de tickets, productos, usuarios y notificaciones según el rol. Las operaciones de productos disponibles son alta, listado y filtro por tipo.
+- La interfaz implementa autenticación y vistas de tickets, productos, usuarios y notificaciones según el rol. Permite buscar tickets y filtrarlos por estado, y buscar productos combinando texto con el filtro por tipo. Las operaciones de productos disponibles son alta, listado y filtro por tipo.
 - La numeración de los archivos de casos de uso corresponde a los diagramas: CU01 alta de producto, CU02 creación de ticket, CU03 mensajería y CU04 reapertura.
 
 La inicialización migra bases SQLite existentes para incorporar los campos requeridos por la versión actual y conservar los registros. En tickets previos, el título se completa a partir de la descripción cuando no existía ese dato; las fechas de cierre históricas no disponibles quedan vacías.
