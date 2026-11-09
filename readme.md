@@ -13,6 +13,16 @@ Desde la carpeta del proyecto:
 py main.py
 ```
 
+## Pruebas automatizadas
+
+Ejecutá la suite desde la carpeta del proyecto:
+
+```bash
+py -m unittest discover -v
+```
+
+Las pruebas usan una base SQLite temporal, separada de `hitos.db`.
+
 La base `hitos.db` se crea automáticamente en esa carpeta en el primer inicio. También se inicializan los tipos de producto definidos en el modelo.
 
 ## Usuarios de demostración
@@ -33,7 +43,7 @@ El técnico de demostración se crea con la primera especialidad disponible. El 
 - Creación de tickets por clientes, con selección automática de un técnico de la especialidad correspondiente.
 - Listados de tickets según el rol y acceso a la conversación y la línea de hitos.
 - Envío de mensajes, registro de hitos y notificación a la otra parte.
-- Estados del ticket: Abierto, En proceso y Cerrado.
+- Estados del ticket: Abierto, En proceso, Resuelto y Cerrado.
 - Reapertura por el cliente titular: cambia el ticket cerrado a En proceso, registra la consulta como mensaje y hito, y notifica al técnico.
 - Los mensajes solo se envían cuando el ticket está Abierto o En proceso.
 - Bandeja de notificaciones y opción para marcarlas como leídas.
@@ -45,10 +55,12 @@ El técnico de demostración se crea con la primera especialidad disponible. El 
 - `control/`: servicios de aplicación y reglas de autorización.
 - `presentacion/`: interfaz de escritorio Tkinter.
 - `main.py`: punto de entrada.
+- `tests/`: pruebas automatizadas.
+- [`docs/`](./docs/README.md): índice de casos de uso y modelos UML editables/exportados.
 
 ## Alcance y criterios aplicados
 
 La consigna actual solicita Python y persistencia SQLite, por lo que SQLite reemplaza la persistencia en memoria mencionada en la documentación anterior. Los casos de uso CU01–CU04 guían los flujos implementados. Las tablas tienen claves foráneas y restricciones de unicidad para correo y número de serie.
 
-El requisito original también mencionaba procesamiento asíncrono y TDD. La consigna actual compartida pide explícitamente Python y SQLite; no especifica procesamiento asíncrono. La interfaz ejecuta las operaciones SQLite localmente. El requisito TDD y las pruebas automatizadas todavía deben completarse.
+Esta versión incluye pruebas automatizadas de regresión para los principales casos de uso; como la implementación funcional ya existía, estas pruebas no se desarrollaron inicialmente siguiendo el ciclo Red-Green-Refactor. La consigna actual compartida pide explícitamente Python y SQLite y no especifica procesamiento asíncrono, por lo que la interfaz ejecuta las operaciones SQLite localmente.
 
