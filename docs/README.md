@@ -30,6 +30,6 @@ Los flujos de alta de producto, creación de ticket, mensajería y reapertura es
 - `Ticket` incluye título, descripción, fechas de creación/cierre, prioridad, estado y relaciones con cliente, técnico, producto, mensajes, hitos y notificaciones.
 - `Producto` incluye los atributos del UML y también `numero_serie`, usado como criterio de unicidad porque los requisitos prohíben duplicados, pero no indican la clave.
 - La numeración de los archivos CU difiere de la del documento textual: en los archivos, CU01 es alta de producto, CU02 creación de ticket, CU03 mensajería y CU04 reapertura.
-- El UML define `RESUELTO`, mientras que el requerimiento funcional escrito enumera solo Abierto, En proceso y Cerrado. Al alinear el código al UML se incorporó Resuelto; queda pendiente confirmar si se actualiza también el requerimiento textual.
+- El UML define `RESUELTO`, mientras que el requerimiento funcional escrito enumera solo Abierto, En proceso y Cerrado. Al alinear el código al UML se incorporó Resuelto.
 
 La base SQLite existente se migra para agregar los campos faltantes, conservar los registros y ampliar la restricción de estados. Los tickets antiguos reciben como título inicial los primeros 80 caracteres de su descripción. La fecha histórica de cierre no puede deducirse de los datos anteriores, por lo que permanece vacía hasta el próximo cierre.
