@@ -49,10 +49,10 @@ class HitosApp:
         style.map("Treeview",background=[("selected","#e4eeec")],foreground=[("selected","#263f3b")])
         style.layout("Slim.Vertical.TScrollbar",[("Vertical.Scrollbar.trough",{"sticky":"ns","children":[("Vertical.Scrollbar.thumb",{"expand":"1","sticky":"nswe"})]})])
         style.layout("Slim.Horizontal.TScrollbar",[("Horizontal.Scrollbar.trough",{"sticky":"we","children":[("Horizontal.Scrollbar.thumb",{"expand":"1","sticky":"nswe"})]})])
-        style.configure("Slim.Vertical.TScrollbar",background="#c5d0ce",troughcolor="#edf1f0",bordercolor="#edf1f0",darkcolor="#c5d0ce",lightcolor="#c5d0ce",borderwidth=0,arrowsize=0,width=8)
-        style.configure("Slim.Horizontal.TScrollbar",background="#c5d0ce",troughcolor="#edf1f0",bordercolor="#edf1f0",darkcolor="#c5d0ce",lightcolor="#c5d0ce",borderwidth=0,arrowsize=0,width=8)
-        style.map("Slim.Vertical.TScrollbar",background=[("active","#9fadaa"),("pressed","#82918e")])
-        style.map("Slim.Horizontal.TScrollbar",background=[("active","#9fadaa"),("pressed","#82918e")])
+        style.configure("Slim.Vertical.TScrollbar",background="#8ba6a0",troughcolor="#e2e9e7",bordercolor="#e2e9e7",darkcolor="#8ba6a0",lightcolor="#8ba6a0",borderwidth=0,arrowsize=0,width=12)
+        style.configure("Slim.Horizontal.TScrollbar",background="#8ba6a0",troughcolor="#e2e9e7",bordercolor="#e2e9e7",darkcolor="#8ba6a0",lightcolor="#8ba6a0",borderwidth=0,arrowsize=0,width=12)
+        style.map("Slim.Vertical.TScrollbar",background=[("active","#63857e"),("pressed","#456b63")])
+        style.map("Slim.Horizontal.TScrollbar",background=[("active","#63857e"),("pressed","#456b63")])
         style.configure("TEntry",padding=8)
         style.configure("TCombobox",padding=7)
 
@@ -143,11 +143,19 @@ class HitosApp:
         self.vistas[nombre].pack(fill="both",expand=True)
         for key,button in self.nav_buttons.items():button.configure(style="NavSelected.TButton" if key==nombre else "Nav.TButton")
 
+    def _ajustar_tablas(self,event=None):
+        ancho=event.widget.winfo_width() if event else self.root.winfo_width()
+        compacto=ancho<700
+        if hasattr(self,"ticket_tree") and self.ticket_tree.winfo_exists():
+            self.ticket_tree.configure(displaycolumns=("id","titulo","estado","prioridad") if compacto else "#all")
+        if hasattr(self,"producto_tree") and self.producto_tree.winfo_exists():
+            self.producto_tree.configure(displaycolumns=("nombre","tipo","serie") if compacto else "#all")
+
     def _tree(self,parent,columns,headings):
         frame=ttk.Frame(parent,style="Card.TFrame",padding=1); frame.pack(fill="both",expand=True,pady=12)
         tree=ttk.Treeview(frame,columns=columns,show="headings",selectmode="browse")
         for col,title,width in headings:
-            tree.heading(col,text=title); tree.column(col,width=width,minwidth=65,anchor="w",stretch=False)
+            tree.heading(col,text=title); tree.column(col,width=width,minwidth=55,anchor="w",stretch=True)
         scroll=ttk.Scrollbar(frame,orient="vertical",command=tree.yview,style="Slim.Vertical.TScrollbar")
         hscroll=ttk.Scrollbar(frame,orient="horizontal",command=tree.xview,style="Slim.Horizontal.TScrollbar")
         tree.configure(yscrollcommand=scroll.set,xscrollcommand=hscroll.set)
@@ -156,12 +164,6 @@ class HitosApp:
         tree.grid(row=0,column=0,sticky="nsew",padx=1,pady=1)
         scroll.grid(row=0,column=1,sticky="ns")
         hscroll.grid(row=1,column=0,sticky="ew")
-        def mostrar_barra_horizontal(_event=None):
-            ancho_columnas=sum(int(tree.column(col,"width")) for col in columns)
-            if tree.winfo_width() < ancho_columnas:hscroll.grid()
-            else:hscroll.grid_remove()
-        tree.bind("<Configure>",mostrar_barra_horizontal,add="+")
-        tree.after_idle(mostrar_barra_horizontal)
         return tree
 
     def _titulo_vista(self,parent,titulo,descripcion):
@@ -185,6 +187,7 @@ class HitosApp:
         self.ticket_count=ttk.Label(self.tab_tickets,text="",style="Count.TLabel"); self.ticket_count.pack(anchor="e",pady=(10,0))
         self.ticket_tree=self._tree(self.tab_tickets,("id","titulo","estado","prioridad","cliente","tecnico","producto","fecha"),[("id","#",45),("titulo","Título",160),("estado","Estado",100),("prioridad","Prioridad",85),("cliente","Cliente",125),("tecnico","Técnico",125),("producto","Producto",150),("fecha","Creado",140)])
         self.ticket_tree.bind("<Double-1>",lambda _e:self.ver_ticket())
+        self.ticket_tree.bind("<Configure>",self._ajustar_tablas,add="+")
         bottom=ttk.Frame(self.tab_tickets); bottom.pack(fill="x")
         ttk.Button(bottom,text="Ver conversación e historial de actividad",command=self.ver_ticket).pack(side="left")
         if self.usuario["rol"] in ("Tecnico","Admin"): ttk.Button(bottom,text="Cambiar estado",command=self.cambiar_estado).pack(side="left",padx=6)
@@ -331,6 +334,7 @@ class HitosApp:
             ttk.Button(bar,text="Agregar tipo",command=self.crear_tipo_producto).pack(side="left",padx=6)
         self.producto_count=ttk.Label(self.tab_productos,text="",style="Count.TLabel"); self.producto_count.pack(anchor="e",pady=(10,0))
         self.producto_tree=self._tree(self.tab_productos,("nombre","tipo","marca","modelo","serie"),[("nombre","Producto",180),("tipo","Tipo",180),("marca","Marca",140),("modelo","Modelo",140),("serie","N.º de serie",180)])
+        self.producto_tree.bind("<Configure>",self._ajustar_tablas,add="+")
         self.cargar_productos()
 
     def cargar_productos(self):
