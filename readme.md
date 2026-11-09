@@ -1,4 +1,4 @@
-﻿# Sistema de Ticketing Hitos
+# Sistema de Ticketing
 
 Aplicación de escritorio en Python para registrar productos, crear y administrar tickets de soporte y mantener el historial de conversación (mensajes e hitos). Los datos persisten en SQLite.
 
@@ -58,9 +58,8 @@ El técnico de demostración se crea con la primera especialidad disponible. El 
 - `tests/`: pruebas automatizadas.
 - [`docs/`](./docs/README.md): índice de casos de uso y modelos UML editables/exportados.
 
-## Alcance y criterios aplicados
+## Implementación actual
 
-La consigna actual solicita Python y persistencia SQLite, por lo que SQLite reemplaza la persistencia en memoria mencionada en la documentación anterior. Los casos de uso CU01–CU04 guían los flujos implementados. Las tablas tienen claves foráneas y restricciones de unicidad para correo y número de serie.
+La aplicación usa Python, SQLite y una interfaz Tkinter organizada en capas. SQLite almacena usuarios, productos, tickets, mensajes, hitos y notificaciones; las claves foráneas y restricciones mantienen la integridad de las relaciones y evitan correos o números de serie duplicados. Los casos de uso y modelos UML relacionados con esta versión están documentados en [`docs/`](./docs/README.md).
 
-Esta versión incluye pruebas automatizadas de regresión para los principales casos de uso; como la implementación funcional ya existía, estas pruebas no se desarrollaron inicialmente siguiendo el ciclo Red-Green-Refactor. La consigna actual compartida pide explícitamente Python y SQLite y no especifica procesamiento asíncrono, por lo que la interfaz ejecuta las operaciones SQLite localmente.
-
+La suite contiene pruebas automatizadas de regresión para los principales flujos. La interfaz ejecuta las operaciones de SQLite localmente, ya que el almacenamiento es local y las operaciones actuales no requieren procesamiento en segundo plano.

@@ -11,7 +11,7 @@ from persistencia.database import Database
 class HitosApp:
     def __init__(self, root):
         self.root=root
-        self.root.title("Hitos | Sistema de Ticketing")
+        self.root.title("Sistema de Ticketing")
         self.root.geometry("1050x680")
         self.root.minsize(850,550)
         self.db=Database()
@@ -53,7 +53,7 @@ class HitosApp:
         self.limpiar()
         box=ttk.Frame(self.root,padding=38,style="Card.TFrame",relief="solid",borderwidth=1)
         box.place(relx=.5,rely=.5,anchor="center")
-        ttk.Label(box,text="Hitos",style="Title.TLabel").grid(row=0,column=0,columnspan=2,pady=(0,8))
+        ttk.Label(box,text="Sistema de Ticketing",style="Title.TLabel").grid(row=0,column=0,columnspan=2,pady=(0,8))
         ttk.Label(box,text="Gestión de atención y soporte técnico",style="Subtitle.TLabel").grid(row=1,column=0,columnspan=2,pady=(0,22))
         ttk.Label(box,text="Correo").grid(row=2,column=0,sticky="w",pady=5)
         email=ttk.Entry(box,width=34); email.grid(row=2,column=1,pady=5)
@@ -71,7 +71,7 @@ class HitosApp:
     def mostrar_principal(self):
         self.limpiar()
         header=ttk.Frame(self.root,padding=(24,18)); header.pack(fill="x")
-        ttk.Label(header,text="Hitos",style="Title.TLabel").pack(side="left")
+        ttk.Label(header,text="Sistema de Ticketing",style="Title.TLabel").pack(side="left")
         ttk.Label(header,text=f"{self.usuario['nombre']} · {self.usuario['rol']}",style="Subtitle.TLabel").pack(side="left",padx=20)
         ttk.Button(header,text="Cerrar sesión",command=self.mostrar_login).pack(side="right")
         self.tabs=ttk.Notebook(self.root); self.tabs.pack(fill="both",expand=True,padx=24,pady=(0,22))
@@ -97,7 +97,7 @@ class HitosApp:
         ttk.Button(top,text="Actualizar",command=self.cargar_tickets).pack(side="left",padx=6)
         self.ticket_tree=self._tree(self.tab_tickets,("id","titulo","estado","prioridad","cliente","tecnico","producto","fecha"),[("id","#",45),("titulo","Título",160),("estado","Estado",100),("prioridad","Prioridad",85),("cliente","Cliente",125),("tecnico","Técnico",125),("producto","Producto",150),("fecha","Creado",140)])
         bottom=ttk.Frame(self.tab_tickets); bottom.pack(fill="x")
-        ttk.Button(bottom,text="Ver conversación e hitos",command=self.ver_ticket).pack(side="left")
+        ttk.Button(bottom,text="Ver conversación e historial de actividad",command=self.ver_ticket).pack(side="left")
         if self.usuario["rol"] in ("Tecnico","Admin"): ttk.Button(bottom,text="Cambiar estado",command=self.cambiar_estado).pack(side="left",padx=6)
         if self.usuario["rol"]=="Cliente": ttk.Button(bottom,text="Cerrar / reabrir",command=self.cerrar_reabrir).pack(side="left")
         if self.usuario["rol"]=="Admin":
@@ -153,7 +153,7 @@ class HitosApp:
         text=tk.Text(body,state="normal",wrap="word",height=18); text.pack(fill="both",expand=True,pady=8)
         text.insert("end","— Conversación —\n")
         for m in mensajes:text.insert("end",f"[{m['fecha_hora']}] {m['remitente']}: {m['contenido']}\n")
-        text.insert("end","\n— Hitos —\n")
+        text.insert("end","\n— Historial de actividad —\n")
         for h in hitos:text.insert("end",f"[{h['fecha_hora']}] {h['tipo_evento']}: {h['detalle']} · {h['realizado_por_nombre']}\n")
         text.configure(state="disabled")
         row=ttk.Frame(body); row.pack(fill="x")

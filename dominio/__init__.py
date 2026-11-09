@@ -1,1 +1,1 @@
-"""Entidades y reglas del sistema Hitos."""
+"""Entidades y reglas del Sistema de Ticketing."""

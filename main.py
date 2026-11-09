@@ -1,4 +1,4 @@
-"""Punto de entrada de Hitos."""
+"""Punto de entrada de Sistema de Ticketing."""
 from presentacion.app import iniciar
 
 
