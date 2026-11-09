@@ -12,8 +12,8 @@ class HitosApp:
     def __init__(self, root):
         self.root=root
         self.root.title("Sistema de Ticketing")
-        self.root.geometry("1050x680")
-        self.root.minsize(850,550)
+        self.root.geometry("1100x720")
+        self.root.minsize(580,520)
         self.db=Database()
         self.servicio=Servicio(self.db)
         self.usuario=None
@@ -21,6 +21,7 @@ class HitosApp:
         self._estilos()
         self.mostrar_login()
         self.root.protocol("WM_DELETE_WINDOW",self.cerrar)
+        self.root.bind("<Configure>",self._ajustar_diseno,add="+")
 
     def _estilos(self):
         style=ttk.Style()
@@ -46,6 +47,12 @@ class HitosApp:
         style.configure("Treeview",rowheight=36,background="#ffffff",fieldbackground="#ffffff",foreground="#344054",font=("Segoe UI",10),borderwidth=0)
         style.configure("Treeview.Heading",padding=(10,10),background="#f0f3f6",foreground="#536174",font=("Segoe UI",9,"bold"),relief="flat")
         style.map("Treeview",background=[("selected","#e4eeec")],foreground=[("selected","#263f3b")])
+        style.layout("Slim.Vertical.TScrollbar",[("Vertical.Scrollbar.trough",{"sticky":"ns","children":[("Vertical.Scrollbar.thumb",{"expand":"1","sticky":"nswe"})]})])
+        style.layout("Slim.Horizontal.TScrollbar",[("Horizontal.Scrollbar.trough",{"sticky":"we","children":[("Horizontal.Scrollbar.thumb",{"expand":"1","sticky":"nswe"})]})])
+        style.configure("Slim.Vertical.TScrollbar",background="#c5d0ce",troughcolor="#edf1f0",bordercolor="#edf1f0",darkcolor="#c5d0ce",lightcolor="#c5d0ce",borderwidth=0,arrowsize=0,width=8)
+        style.configure("Slim.Horizontal.TScrollbar",background="#c5d0ce",troughcolor="#edf1f0",bordercolor="#edf1f0",darkcolor="#c5d0ce",lightcolor="#c5d0ce",borderwidth=0,arrowsize=0,width=8)
+        style.map("Slim.Vertical.TScrollbar",background=[("active","#9fadaa"),("pressed","#82918e")])
+        style.map("Slim.Horizontal.TScrollbar",background=[("active","#9fadaa"),("pressed","#82918e")])
         style.configure("TEntry",padding=8)
         style.configure("TCombobox",padding=7)
 
@@ -53,6 +60,7 @@ class HitosApp:
         for child in self.root.winfo_children(): child.destroy()
 
     def mostrar_login(self):
+        self._vista_principal_activa=False
         self.limpiar()
         box=ttk.Frame(self.root,padding=38,style="Card.TFrame",relief="solid",borderwidth=1)
         box.place(relx=.5,rely=.5,anchor="center")
@@ -73,35 +81,62 @@ class HitosApp:
 
     def mostrar_principal(self):
         self.limpiar()
+        self._vista_principal_activa=True
         header=ttk.Frame(self.root,padding=(24,14),style="Card.TFrame"); header.pack(fill="x")
         ttk.Label(header,text="Sistema de Ticketing",style="Brand.TLabel").pack(side="left")
         ttk.Label(header,text="Atención y soporte técnico",style="Subtitle.TLabel").pack(side="left",padx=16)
         ttk.Button(header,text="Cerrar sesión",command=self.mostrar_login).pack(side="right")
 
-        shell=ttk.Frame(self.root); shell.pack(fill="both",expand=True,padx=18,pady=18)
-        sidebar=ttk.Frame(shell,style="Card.TFrame",padding=(12,16)); sidebar.pack(side="left",fill="y",padx=(0,16))
-        ttk.Label(sidebar,text="MENÚ",style="Subtitle.TLabel").pack(anchor="w",padx=10,pady=(2,12))
-        content=ttk.Frame(shell); content.pack(side="left",fill="both",expand=True)
+        self.shell=ttk.Frame(self.root); self.shell.pack(fill="both",expand=True,padx=18,pady=18)
+        self.sidebar=ttk.Frame(self.shell,style="Card.TFrame",padding=(12,16)); self.sidebar.pack(side="left",fill="y",padx=(0,16))
+        self.menu_label=ttk.Label(self.sidebar,text="MENÚ",style="Subtitle.TLabel"); self.menu_label.pack(anchor="w",padx=10,pady=(2,12))
+        self.nav_container=ttk.Frame(self.sidebar,style="Card.TFrame"); self.nav_container.pack(fill="x")
+        self.content=ttk.Frame(self.shell); self.content.pack(side="left",fill="both",expand=True)
         self.vistas={}
         self.nav_buttons={}
         nav_items=[("tickets","Tickets"),("productos","Productos")]
-        self.tab_tickets=ttk.Frame(content,padding=18); self.vistas["tickets"]=self.tab_tickets; self._vista_tickets()
-        self.tab_productos=ttk.Frame(content,padding=18); self.vistas["productos"]=self.tab_productos; self._vista_productos()
+        self.tab_tickets=ttk.Frame(self.content,padding=18); self.vistas["tickets"]=self.tab_tickets; self._vista_tickets()
+        self.tab_productos=ttk.Frame(self.content,padding=18); self.vistas["productos"]=self.tab_productos; self._vista_productos()
         if self.usuario["rol"]=="Admin":
             nav_items.append(("admin","Administración"))
-            self.tab_admin=ttk.Frame(content,padding=22); self.vistas["admin"]=self.tab_admin; self._vista_admin()
+            self.tab_admin=ttk.Frame(self.content,padding=22); self.vistas["admin"]=self.tab_admin; self._vista_admin()
             nav_items.append(("usuarios","Usuarios"))
-            self.tab_usuarios=ttk.Frame(content,padding=18); self.vistas["usuarios"]=self.tab_usuarios; self._vista_usuarios()
+            self.tab_usuarios=ttk.Frame(self.content,padding=18); self.vistas["usuarios"]=self.tab_usuarios; self._vista_usuarios()
         nav_items.append(("notificaciones","Notificaciones"))
-        self.tab_notificaciones=ttk.Frame(content,padding=18); self.vistas["notificaciones"]=self.tab_notificaciones; self._vista_notificaciones()
+        self.tab_notificaciones=ttk.Frame(self.content,padding=18); self.vistas["notificaciones"]=self.tab_notificaciones; self._vista_notificaciones()
         for key,label in nav_items:
-            button=ttk.Button(sidebar,text=label,style="Nav.TButton",command=lambda k=key:self.mostrar_vista(k))
+            button=ttk.Button(self.nav_container,text=label,style="Nav.TButton",command=lambda k=key:self.mostrar_vista(k))
             button.pack(fill="x",pady=3); self.nav_buttons[key]=button
-        ttk.Separator(sidebar).pack(fill="x",pady=14)
-        ttk.Label(sidebar,text=self.usuario["nombre"],font=("Segoe UI",10,"bold"),background="#ffffff",foreground="#344054",wraplength=160).pack(anchor="w",padx=10)
-        ttk.Label(sidebar,text=self.usuario["rol"],style="Subtitle.TLabel").pack(anchor="w",padx=10,pady=(3,0))
+        self.profile=ttk.Frame(self.sidebar,style="Card.TFrame")
+        ttk.Separator(self.profile).pack(fill="x",pady=14)
+        ttk.Label(self.profile,text=self.usuario["nombre"],font=("Segoe UI",10,"bold"),background="#ffffff",foreground="#344054",wraplength=160).pack(anchor="w",padx=10)
+        ttk.Label(self.profile,text=self.usuario["rol"],style="Subtitle.TLabel").pack(anchor="w",padx=10,pady=(3,0))
+        self.profile.pack(fill="x")
         vista_inicial="admin" if self.usuario["rol"]=="Admin" else "tickets"
         self.mostrar_vista(vista_inicial)
+        self.root.after_idle(self._ajustar_diseno)
+
+    def _ajustar_diseno(self,event=None):
+        if not getattr(self,"_vista_principal_activa",False) or not hasattr(self,"shell"):return
+        compacto=self.root.winfo_width()<820
+        self.sidebar.pack_forget(); self.content.pack_forget()
+        if compacto:
+            self.shell.pack_configure(padx=8,pady=8)
+            self.sidebar.pack(side="top",fill="x",pady=(0,8))
+            self.content.pack(side="top",fill="both",expand=True)
+            self.menu_label.pack_forget(); self.profile.pack_forget()
+            for button in self.nav_buttons.values():button.pack_forget()
+            for button in self.nav_buttons.values():button.pack(side="left",fill="x",expand=True,padx=2,pady=0)
+            for vista in self.vistas.values():vista.configure(padding=10)
+        else:
+            self.shell.pack_configure(padx=18,pady=18)
+            self.sidebar.pack(side="left",fill="y",padx=(0,16))
+            self.content.pack(side="left",fill="both",expand=True)
+            self.menu_label.pack(anchor="w",padx=10,pady=(2,12),before=self.nav_container)
+            self.profile.pack(fill="x")
+            for button in self.nav_buttons.values():button.pack_forget()
+            for button in self.nav_buttons.values():button.pack(fill="x",pady=3)
+            for vista in self.vistas.values():vista.configure(padding=18)
 
     def mostrar_vista(self,nombre):
         for vista in self.vistas.values():vista.pack_forget()
@@ -113,13 +148,20 @@ class HitosApp:
         tree=ttk.Treeview(frame,columns=columns,show="headings",selectmode="browse")
         for col,title,width in headings:
             tree.heading(col,text=title); tree.column(col,width=width,minwidth=65,anchor="w",stretch=False)
-        scroll=ttk.Scrollbar(frame,orient="vertical",command=tree.yview)
-        hscroll=ttk.Scrollbar(frame,orient="horizontal",command=tree.xview)
+        scroll=ttk.Scrollbar(frame,orient="vertical",command=tree.yview,style="Slim.Vertical.TScrollbar")
+        hscroll=ttk.Scrollbar(frame,orient="horizontal",command=tree.xview,style="Slim.Horizontal.TScrollbar")
         tree.configure(yscrollcommand=scroll.set,xscrollcommand=hscroll.set)
         tree.tag_configure("odd",background="#f8fafc")
         frame.grid_rowconfigure(0,weight=1); frame.grid_columnconfigure(0,weight=1)
         tree.grid(row=0,column=0,sticky="nsew",padx=1,pady=1)
-        scroll.grid(row=0,column=1,sticky="ns"); hscroll.grid(row=1,column=0,sticky="ew")
+        scroll.grid(row=0,column=1,sticky="ns")
+        hscroll.grid(row=1,column=0,sticky="ew")
+        def mostrar_barra_horizontal(_event=None):
+            ancho_columnas=sum(int(tree.column(col,"width")) for col in columns)
+            if tree.winfo_width() < ancho_columnas:hscroll.grid()
+            else:hscroll.grid_remove()
+        tree.bind("<Configure>",mostrar_barra_horizontal,add="+")
+        tree.after_idle(mostrar_barra_horizontal)
         return tree
 
     def _titulo_vista(self,parent,titulo,descripcion):
