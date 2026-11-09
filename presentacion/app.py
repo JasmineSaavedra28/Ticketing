@@ -26,24 +26,26 @@ class HitosApp:
         style=ttk.Style()
         try: style.theme_use("clam")
         except tk.TclError: pass
-        self.root.configure(bg="#f2f5f9")
-        style.configure(".",font=("Segoe UI",10),background="#f2f5f9",foreground="#243447")
-        style.configure("TFrame",background="#f2f5f9")
+        self.root.configure(bg="#f5f6f8")
+        style.configure(".",font=("Segoe UI",10),background="#f5f6f8",foreground="#344054")
+        style.configure("TFrame",background="#f5f6f8")
         style.configure("Card.TFrame",background="#ffffff")
-        style.configure("Title.TLabel",font=("Segoe UI",22,"bold"),foreground="#12304a",background="#f2f5f9")
-        style.configure("Subtitle.TLabel",font=("Segoe UI",10),foreground="#64748b",background="#f2f5f9")
-        style.configure("Section.TLabel",font=("Segoe UI",15,"bold"),foreground="#12304a",background="#f2f5f9")
-        style.configure("Count.TLabel",font=("Segoe UI",9,"bold"),foreground="#1769aa",background="#e0efff",padding=(10,5))
-        style.configure("TButton",padding=(12,8),background="#e2e8f0",foreground="#243447",borderwidth=0)
-        style.map("TButton",background=[("active","#cbd5e1"),("disabled","#e8edf3")])
-        style.configure("Primary.TButton",padding=(14,9),background="#1769aa",foreground="white",font=("Segoe UI",10,"bold"))
-        style.map("Primary.TButton",background=[("active","#12558c")],foreground=[("active","white")])
-        style.configure("TNotebook",background="#f2f5f9",borderwidth=0)
-        style.configure("TNotebook.Tab",padding=(18,10),font=("Segoe UI",10,"bold"),background="#e5ebf2",foreground="#526174")
-        style.map("TNotebook.Tab",background=[("selected","#ffffff")],foreground=[("selected","#1769aa")])
-        style.configure("Treeview",rowheight=34,background="#ffffff",fieldbackground="#ffffff",foreground="#243447",font=("Segoe UI",10),borderwidth=0)
-        style.configure("Treeview.Heading",padding=(10,10),background="#e8eef5",foreground="#334155",font=("Segoe UI",9,"bold"),relief="flat")
-        style.map("Treeview",background=[("selected","#dbeafe")],foreground=[("selected","#12304a")])
+        style.configure("Title.TLabel",font=("Segoe UI",20,"bold"),foreground="#202b3c",background="#ffffff")
+        style.configure("Brand.TLabel",font=("Segoe UI",16,"bold"),foreground="#243449",background="#ffffff")
+        style.configure("Subtitle.TLabel",font=("Segoe UI",10),foreground="#7a8798",background="#ffffff")
+        style.configure("Section.TLabel",font=("Segoe UI",17,"bold"),foreground="#253247",background="#f5f6f8")
+        style.configure("Count.TLabel",font=("Segoe UI",9,"bold"),foreground="#536982",background="#eaf0f5",padding=(10,5))
+        style.configure("TButton",padding=(12,8),background="#e9edf2",foreground="#344054",borderwidth=0)
+        style.map("TButton",background=[("active","#dce3eb"),("disabled","#edf0f3")])
+        style.configure("Primary.TButton",padding=(14,9),background="#527d78",foreground="white",font=("Segoe UI",10,"bold"))
+        style.map("Primary.TButton",background=[("active","#426b66")],foreground=[("active","white")])
+        style.configure("Nav.TButton",anchor="w",padding=(14,11),background="#ffffff",foreground="#596678",font=("Segoe UI",10))
+        style.map("Nav.TButton",background=[("active","#f0f3f6")],foreground=[("active","#26364b")])
+        style.configure("NavSelected.TButton",anchor="w",padding=(14,11),background="#eaf1f0",foreground="#3e6d67",font=("Segoe UI",10,"bold"))
+        style.map("NavSelected.TButton",background=[("active","#e1ebea")])
+        style.configure("Treeview",rowheight=36,background="#ffffff",fieldbackground="#ffffff",foreground="#344054",font=("Segoe UI",10),borderwidth=0)
+        style.configure("Treeview.Heading",padding=(10,10),background="#f0f3f6",foreground="#536174",font=("Segoe UI",9,"bold"),relief="flat")
+        style.map("Treeview",background=[("selected","#e4eeec")],foreground=[("selected","#263f3b")])
         style.configure("TEntry",padding=8)
         style.configure("TCombobox",padding=7)
 
@@ -71,28 +73,61 @@ class HitosApp:
 
     def mostrar_principal(self):
         self.limpiar()
-        header=ttk.Frame(self.root,padding=(24,18)); header.pack(fill="x")
-        ttk.Label(header,text="Sistema de Ticketing",style="Title.TLabel").pack(side="left")
-        ttk.Label(header,text=f"{self.usuario['nombre']} · {self.usuario['rol']}",style="Subtitle.TLabel").pack(side="left",padx=20)
+        header=ttk.Frame(self.root,padding=(24,14),style="Card.TFrame"); header.pack(fill="x")
+        ttk.Label(header,text="Sistema de Ticketing",style="Brand.TLabel").pack(side="left")
+        ttk.Label(header,text="Atención y soporte técnico",style="Subtitle.TLabel").pack(side="left",padx=16)
         ttk.Button(header,text="Cerrar sesión",command=self.mostrar_login).pack(side="right")
-        self.tabs=ttk.Notebook(self.root); self.tabs.pack(fill="both",expand=True,padx=24,pady=(0,22))
-        self.tab_tickets=ttk.Frame(self.tabs,padding=12); self.tabs.add(self.tab_tickets,text="Tickets"); self._vista_tickets()
-        self.tab_productos=ttk.Frame(self.tabs,padding=12); self.tabs.add(self.tab_productos,text="Productos"); self._vista_productos()
+
+        shell=ttk.Frame(self.root); shell.pack(fill="both",expand=True,padx=18,pady=18)
+        sidebar=ttk.Frame(shell,style="Card.TFrame",padding=(12,16)); sidebar.pack(side="left",fill="y",padx=(0,16))
+        ttk.Label(sidebar,text="MENÚ",style="Subtitle.TLabel").pack(anchor="w",padx=10,pady=(2,12))
+        content=ttk.Frame(shell); content.pack(side="left",fill="both",expand=True)
+        self.vistas={}
+        self.nav_buttons={}
+        nav_items=[("tickets","Tickets"),("productos","Productos")]
+        self.tab_tickets=ttk.Frame(content,padding=18); self.vistas["tickets"]=self.tab_tickets; self._vista_tickets()
+        self.tab_productos=ttk.Frame(content,padding=18); self.vistas["productos"]=self.tab_productos; self._vista_productos()
         if self.usuario["rol"]=="Admin":
-            self.tab_usuarios=ttk.Frame(self.tabs,padding=12); self.tabs.add(self.tab_usuarios,text="Usuarios"); self._vista_usuarios()
-        self.tab_notificaciones=ttk.Frame(self.tabs,padding=12); self.tabs.add(self.tab_notificaciones,text="Notificaciones"); self._vista_notificaciones()
+            nav_items.append(("admin","Administración"))
+            self.tab_admin=ttk.Frame(content,padding=22); self.vistas["admin"]=self.tab_admin; self._vista_admin()
+            nav_items.append(("usuarios","Usuarios"))
+            self.tab_usuarios=ttk.Frame(content,padding=18); self.vistas["usuarios"]=self.tab_usuarios; self._vista_usuarios()
+        nav_items.append(("notificaciones","Notificaciones"))
+        self.tab_notificaciones=ttk.Frame(content,padding=18); self.vistas["notificaciones"]=self.tab_notificaciones; self._vista_notificaciones()
+        for key,label in nav_items:
+            button=ttk.Button(sidebar,text=label,style="Nav.TButton",command=lambda k=key:self.mostrar_vista(k))
+            button.pack(fill="x",pady=3); self.nav_buttons[key]=button
+        ttk.Separator(sidebar).pack(fill="x",pady=14)
+        ttk.Label(sidebar,text=self.usuario["nombre"],font=("Segoe UI",10,"bold"),background="#ffffff",foreground="#344054",wraplength=160).pack(anchor="w",padx=10)
+        ttk.Label(sidebar,text=self.usuario["rol"],style="Subtitle.TLabel").pack(anchor="w",padx=10,pady=(3,0))
+        vista_inicial="admin" if self.usuario["rol"]=="Admin" else "tickets"
+        self.mostrar_vista(vista_inicial)
+
+    def mostrar_vista(self,nombre):
+        for vista in self.vistas.values():vista.pack_forget()
+        self.vistas[nombre].pack(fill="both",expand=True)
+        for key,button in self.nav_buttons.items():button.configure(style="NavSelected.TButton" if key==nombre else "Nav.TButton")
 
     def _tree(self,parent,columns,headings):
         frame=ttk.Frame(parent,style="Card.TFrame",padding=1); frame.pack(fill="both",expand=True,pady=12)
         tree=ttk.Treeview(frame,columns=columns,show="headings",selectmode="browse")
         for col,title,width in headings:
-            tree.heading(col,text=title); tree.column(col,width=width,anchor="w")
-        scroll=ttk.Scrollbar(frame,orient="vertical",command=tree.yview); tree.configure(yscrollcommand=scroll.set)
+            tree.heading(col,text=title); tree.column(col,width=width,minwidth=65,anchor="w",stretch=False)
+        scroll=ttk.Scrollbar(frame,orient="vertical",command=tree.yview)
+        hscroll=ttk.Scrollbar(frame,orient="horizontal",command=tree.xview)
+        tree.configure(yscrollcommand=scroll.set,xscrollcommand=hscroll.set)
         tree.tag_configure("odd",background="#f8fafc")
-        tree.pack(side="left",fill="both",expand=True,padx=1,pady=1); scroll.pack(side="right",fill="y")
+        frame.grid_rowconfigure(0,weight=1); frame.grid_columnconfigure(0,weight=1)
+        tree.grid(row=0,column=0,sticky="nsew",padx=1,pady=1)
+        scroll.grid(row=0,column=1,sticky="ns"); hscroll.grid(row=1,column=0,sticky="ew")
         return tree
 
+    def _titulo_vista(self,parent,titulo,descripcion):
+        ttk.Label(parent,text=titulo,style="Section.TLabel").pack(anchor="w",pady=(0,3))
+        ttk.Label(parent,text=descripcion,style="Subtitle.TLabel").pack(anchor="w",pady=(0,16))
+
     def _vista_tickets(self):
+        self._titulo_vista(self.tab_tickets,"Tickets","Consultá, buscá y gestioná los casos de soporte.")
         top=ttk.Frame(self.tab_tickets); top.pack(fill="x")
         if self.usuario["rol"] in ("Cliente","Admin"): ttk.Button(top,text="+ Crear ticket",style="Primary.TButton",command=self.crear_ticket).pack(side="left")
         ttk.Label(top,text="Buscar").pack(side="left",padx=(16,6))
@@ -107,6 +142,7 @@ class HitosApp:
         ttk.Button(top,text="Actualizar",command=self.cargar_tickets).pack(side="right")
         self.ticket_count=ttk.Label(self.tab_tickets,text="",style="Count.TLabel"); self.ticket_count.pack(anchor="e",pady=(10,0))
         self.ticket_tree=self._tree(self.tab_tickets,("id","titulo","estado","prioridad","cliente","tecnico","producto","fecha"),[("id","#",45),("titulo","Título",160),("estado","Estado",100),("prioridad","Prioridad",85),("cliente","Cliente",125),("tecnico","Técnico",125),("producto","Producto",150),("fecha","Creado",140)])
+        self.ticket_tree.bind("<Double-1>",lambda _e:self.ver_ticket())
         bottom=ttk.Frame(self.tab_tickets); bottom.pack(fill="x")
         ttk.Button(bottom,text="Ver conversación e historial de actividad",command=self.ver_ticket).pack(side="left")
         if self.usuario["rol"] in ("Tecnico","Admin"): ttk.Button(bottom,text="Cambiar estado",command=self.cambiar_estado).pack(side="left",padx=6)
@@ -238,6 +274,7 @@ class HitosApp:
         except Exception as e:messagebox.showerror("No se pudo cambiar",self.servicio.manejar_error(e))
 
     def _vista_productos(self):
+        self._titulo_vista(self.tab_productos,"Productos","Administrá el catálogo y encontrá rápidamente un producto.")
         bar=ttk.Frame(self.tab_productos); bar.pack(fill="x")
         ttk.Label(bar,text="Buscar").pack(side="left")
         self.producto_busqueda=tk.StringVar()
@@ -291,15 +328,33 @@ class HitosApp:
         except Exception as e:messagebox.showerror("No se pudo crear",self.servicio.manejar_error(e))
 
     def _vista_usuarios(self):
+        self._titulo_vista(self.tab_usuarios,"Usuarios","Cuentas, roles y especialidades técnicas.")
         bar=ttk.Frame(self.tab_usuarios); bar.pack(fill="x")
         ttk.Button(bar,text="Agregar usuario",command=self.crear_usuario).pack(side="left")
         self.usuario_tree=self._tree(self.tab_usuarios,("nombre","email","rol","especialidad"),[("nombre","Nombre",200),("email","Correo",260),("rol","Rol",120),("especialidad","Especialidad",220)])
         self.cargar_usuarios()
 
+    def _vista_admin(self):
+        self._titulo_vista(self.tab_admin,"Panel de administración","Accesos rápidos a las herramientas de gestión.")
+        opciones=(
+            ("Usuarios","Creá cuentas y consultá roles y especialidades.","Gestionar usuarios","usuarios"),
+            ("Productos","Administrá productos y tipos del catálogo.","Gestionar productos","productos"),
+            ("Tickets","Revisá asignaciones y configurá prioridades.","Gestionar tickets","tickets"),
+        )
+        for titulo,descripcion,accion,vista in opciones:
+            tarjeta=ttk.Frame(self.tab_admin,style="Card.TFrame",padding=(18,14))
+            tarjeta.pack(fill="x",pady=7)
+            detalle=ttk.Frame(tarjeta,style="Card.TFrame"); detalle.pack(side="left",fill="x",expand=True)
+            ttk.Label(detalle,text=titulo,font=("Segoe UI",11,"bold"),background="#ffffff",foreground="#344054").pack(anchor="w")
+            ttk.Label(detalle,text=descripcion,style="Subtitle.TLabel").pack(anchor="w",pady=(4,0))
+            ttk.Button(tarjeta,text=accion,command=lambda destino=vista:self.mostrar_vista(destino)).pack(side="right",padx=(14,0))
+
     def cargar_usuarios(self):
         if not hasattr(self,"usuario_tree") or not self.usuario_tree.winfo_exists():return
         self.usuario_tree.delete(*self.usuario_tree.get_children())
-        for u in self.servicio.usuarios.listar():self.usuario_tree.insert("","end",values=(u["nombre"],u["email"],u["rol"],u["especialidad"] or "—"))
+        for u in self.servicio.usuarios.listar():
+            especialidad=getattr(u,"especialidad_nombre","") or "—"
+            self.usuario_tree.insert("","end",values=(u["nombre"],u["email"],u["rol"],especialidad))
 
     def crear_usuario(self):
         win=tk.Toplevel(self.root); win.title("Agregar usuario"); win.transient(self.root); win.grab_set()
@@ -318,6 +373,7 @@ class HitosApp:
         ttk.Button(body,text="Guardar",command=guardar).grid(row=5,column=1,sticky="e",pady=10)
 
     def _vista_notificaciones(self):
+        self._titulo_vista(self.tab_notificaciones,"Notificaciones","Novedades relacionadas con tus tickets.")
         self.notif_tree=self._tree(self.tab_notificaciones,("id","mensaje","fecha","leida"),[("id","#",55),("mensaje","Notificación",540),("fecha","Fecha",170),("leida","Leída",70)])
         ttk.Button(self.tab_notificaciones,text="Marcar seleccionada como leída",command=self.marcar_leida).pack(anchor="w")
         self.cargar_notificaciones()

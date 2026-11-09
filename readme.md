@@ -39,6 +39,7 @@ El técnico de demostración se crea con la primera especialidad disponible. El 
 
 - Inicio de sesión con contraseñas almacenadas como PBKDF2-HMAC-SHA256 con salt.
 - Administración de usuarios con roles Cliente, Técnico y Admin; el correo es único.
+- Panel de administración con accesos directos a usuarios, productos y gestión de tickets.
 - Catálogo de tipos y productos; el número de serie es único y se puede buscar por texto y filtrar por tipo.
 - Creación de tickets por clientes, con selección automática de un técnico de la especialidad correspondiente.
 - Listados de tickets según el rol, búsqueda por texto y filtro por estado; acceso a la conversación e historial de actividad.
